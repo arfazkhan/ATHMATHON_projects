@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django project directory
+/myproject/__pycache__/
+/myproject/*.pyc
+
+# SQLite database file (if you're using SQLite)
+/db.sqlite3
+
+# Media directory (if you're using Django's default media setup)
+/media
+
+# Static files (if you're using Django's default static setup)
+/staticfiles
+
+# Virtual environment directory
+/venv/
+
+# IDE files
+/.vscode
+/.idea
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+*/migrations/
