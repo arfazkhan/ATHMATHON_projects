@@ -8,7 +8,7 @@ st.header("Hi im Vita")
 # st.subheader("Please begin by sharing your full name, age, and token number. Following that, provide details about your current condition or situation")
 
 # Define your OpenAI API key here
-openai_api_key = "sk-proj-4g89kxn8OJz6Jy0WMgG5T3BlbkFJ8GAqLciQgauuIfhVaEvt"
+openai_api_key = '''//Your API key here//'''
 
 # Initialize the ChatOpenAI class with your API key
 chat = ChatOpenAI(api_key=openai_api_key, temperature=0.5)
