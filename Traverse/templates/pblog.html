@@ -1,0 +1,104 @@
+{% extends "Dashboardbase.html" %}
+{% load static %}
+{% block content %}
+<div class="col-12">
+  <div class="col-md-12 mb-2 d-flex justify-content-between">
+    <h3 class="texte"> Blogs</h3>
+    {% if blogs %}
+    <button class="btn border-radius-lg contexte" data-bs-toggle="modal" data-bs-target="#blogModal">Create new</button>
+    {% endif %}
+    <div class="modal" id="blogModal" tabindex="-1" role="dialog" aria-labelledby="blogModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="blogModalLabel">Create Blog</h5>
+            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class=" modal-body">
+              <div class="form-group">
+                <label for="blogTitle">Blog Title</label>
+                <input type="text" name="title" class="form-control" id="blogTitle" placeholder="Enter blog title"
+                  required>
+              </div>
+              <div class="form-group">
+                <label for="blogDescription">Blog Description</label>
+                <textarea class="form-control" name="description" id="blogDescription" rows="3"
+                  placeholder="Enter blog description" required></textarea>
+              </div>
+              <div class="form-group">
+                {% comment %} <label for="file-upload" class="custom-file-upload">
+                  Blog Image
+                </label> {% endcomment %}
+                <input id="file-upload" class="form-control" name="image" type="file" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn blue shadow-none" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn contexte">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    {% if not blogs %}
+    <div class="align-items-center d-flex flex-column">
+      <h4 class="text-center text-muted">There are no blogs....</h4>
+      <button class="btn border-radius-lg contexte" data-bs-toggle="modal" data-bs-target="#blogModal"
+        style="width: fit-content;">Create new</button>
+    </div>
+    {% endif %}
+    {% for x in blogs %}
+    <div class="col-lg-4 mb-lg-0 mt-lg-3 mb-4">
+      <div class="card" style="max-height: fit-content;">
+        <div class="card-header p-0 mx-3 mt-3 position-relative z-index-1">
+          <a href="javascript:;" class="d-block">
+            <div class="img-fluid border-radius-lg"
+              style="max-height: 300px; min-height: 300px; width: 100%; background-image: url('{{x.image.url}}'); background-size: cover;">
+            </div>
+          </a>
+        </div>
+
+        <div class="card-body pt-3">
+          <a href="{% url 'blog-detail' x.id %}" class="card-title h5 d-block text-darker">
+            {{x.title}}
+          </a>
+          <p class="card-description mb-4">
+            {{x.description|truncatechars:128}}
+          </p>
+          <div class="author align-items-center">
+            {% if x.author.profile.profile_pic %}
+            <div class="avatar shadow"
+              style="background-image: url('{{ x.author.profile.profile_pic.url }}'); border-radius: 50%; background-size: cover;">
+            </div>
+            {% else %}
+            <div class="avatar shadow"
+              style="background-image: url('/media/profile_pics/default.jpg'); border-radius: 50%; background-size: cover;">
+            </div>
+            {% endif %}
+            <div class="name ps-2">
+              <span>{{x.author}}</span>
+              <div class="stats">
+                <small>Posted on {{x.pub_date|date:"M d, Y"}}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<style>
+  .container-fluid{
+    height:100vh;
+  }
+</style>
+</div>
+{% endblock %}

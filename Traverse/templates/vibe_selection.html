@@ -1,0 +1,74 @@
+{% extends 'Dashboardbase.html' %}
+{% load static %}
+
+{% block content %}
+<div class="col-12">
+    <div id="content">
+        <h3 class="m-4">Tell Me Your Vibes</h3>
+        <hr>
+        <div class="container vibe">
+            {% for x in vibes %}
+            <button class="button" data-vibe="{{ x }}">{{ x }}</button>
+            {% endfor %}
+        <style>
+            .vibe .button {
+                pointer-events: auto;
+                background-color: #c7c8c9;
+                border: none;
+                color: black;
+                padding: 5px 10px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                margin-right: 13px;
+                margin-left: -1px;
+                margin-bottom: 10px;
+                border-radius: 100px;
+            }
+        
+            .vibe .active {
+                background-color: #2557D6;
+                color: #c7c8c9;
+            }
+        </style>
+        </div>
+        <div class="d-flex justify-content-end align-items-center mt-4" style="height: 100%;">
+            <button id="submit" class="btn btn-info">Save My Vibes</button>
+        </div>
+        <script>
+            const activeButtons = [];
+        
+            document.querySelectorAll('.button').forEach(button => {
+                button.addEventListener('click', () => {
+                    button.classList.toggle('active');
+        
+                    const vibe = button.dataset.vibe;
+        
+                    // Toggle vibe in the array
+                    const index = activeButtons.indexOf(vibe);
+                    if (index === -1) {
+                        activeButtons.push(vibe);
+                    } else {
+                        activeButtons.splice(index, 1);
+                    }   
+                });
+            });
+            document.getElementById('submit').addEventListener('click', () => {
+                fetch('/dashboard/vibes/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({vibes: activeButtons})
+                }).then(response => response.json()).then(data => {
+                    if (data.success) {
+                        window.location.href = '/dashboard';
+                    }
+                })
+            })
+        </script>
+    </div>
+</div>
+
+{% endblock %}

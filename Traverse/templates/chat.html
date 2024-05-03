@@ -1,0 +1,109 @@
+{% extends 'Dashboardbase.html' %}
+{% load static %}
+
+{%block content %}
+<div align="start">
+  <div class="ms-4"></div>
+</div>
+<div class="col-12">
+
+  <div class="card mb-4">
+    <div class="card-header pb-0">
+      <h5 class="texte mb-4 font-weight-bolder">Chats</h5>
+    </div>
+    <div class="card-body px-0 pt-0 pb-2">
+      <div class="table-responsive p-0">
+        <table class="table align-items-center mb-0">
+          <thead>
+            <tr>
+              <th class=" px-4  texte font-weight-bolder  ">Name</th>
+              <th class=" text-center texte  font-weight-bolder ">Status</th>
+              <th class=" text-center texte  font-weight-bolder">Action</th>
+            </tr>        
+          </thead>
+  
+          <tbody>
+            {% if request.user.profile.friends.all %}
+            {% for x in request.user.profile.friends.all %}
+            <tr>
+              <td>
+                <a href="/dashboard/chat/person-chat?username={{x}}" class="person_chat">
+                  <div class="d-flex px-2 py-1 person_chat">
+                    <div>
+                      {% if x.profile.profile_pic %}
+                      <div src="" class="rounded-circle mx-1"
+                        style="background-image: url('{{x.profile.profile_pic.url}}'); width: 40px; height: 40px; background-size: cover;">
+                      </div>
+                      {% else %}
+                      <div src="" class="rounded-circle mx-1"
+                        style="background-image: url('/media/profile_pics/default.jpg'); width: 40px; height: 40px; background-size: cover;">
+                      </div>
+                      {% endif %}
+                    </div>
+                    <div class="d-flex flex-column justify-content-center">
+                      <div class="d-flex flex-column">
+                        <h6 class="mb-0 text-sm">{{x}}</h6>
+                        <p class="mb-0 m-0 text-sm">
+                        {% if x.profile.email %}
+                          {{x.profile.email}}
+                          {% else %}
+                          No email
+                        {% endif %}
+                          </p>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </td>
+              <td class="align-middle text-center text-sm">
+                
+                {% if x.profile.is_onTrip %}
+                <span class="badge badge-sm bg-gradient-success">On Trip</span>
+                {% else %}
+                <span class="badge badge-sm bg-gradient-info">Not On Trip</span>
+                {% endif %}
+                  
+              </td>
+              <td class="align-middle text-center">
+                <a href="javascript:;" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip"
+                  data-original-title="Edit user">
+                  <i class="fa fa-trash fa-1x" style="color: red;"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <td></td>
+            <td></td>
+            <td class="d-flex justify-content-start">
+              <h4 class="text-sm font-weight-bold my-2 text-muted">No Chats</h4>
+            </td>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <style>
+ 
+    .container-fluid{
+      height:100vh;
+    }
+    hr{
+      border: 2px solid gray;
+    }
+    @media (max-width: 992px) {
+      h1 {
+          font-size: 30px;
+      }
+    
+  }
+  @media(max-width:768px){
+    .d-none {
+      display: none !important;
+    }
+  }
+  </style>
+</div>
+<script src="{% static '/js/dashboard/custom.js' %}"></script>
+{% endblock %}

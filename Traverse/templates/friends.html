@@ -1,0 +1,81 @@
+{% extends 'Dashboardbase.html' %}
+
+
+{% block content %}
+<style>
+    .searchbar {
+        width: 35%;
+    }
+    .removei{
+        display: none;
+    }
+    @media (max-width: 992px) {
+        h1 {
+            font-size: 30px;
+        }
+        .removef{
+            display: none;
+        }
+        .removei{
+            display: block;
+        }
+        .btn:hover .removef {
+            display: inline;
+        }
+
+        .btn:hover .removei {
+            display: none;
+        }
+    }
+
+    .searchbar {
+        width: 170px;
+    }
+</style>
+<div class="d-flex" style="height: 40px;">
+    <form method="get" class="d-flex justify-content-end" style="width: 100%;">
+        <input type="text" class="form-control searchbar" name="search" id="search" value="{{request.GET.search|default:''}}" placeholder="Search Friends......">
+        <button class="btn contexte mx-3" style="height: 90%;"><i class="fa fa-search" aria-hidden="true"></i></button>
+    </form>
+</div>
+
+{% if profiles %} {% for x in profiles %}
+<div style="width: 100%; margin: 20px;"
+ class="border-radius-2xl px-2 border-bottom-1 shadow-xs shadow-blur mt-2">
+<div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-3 align-content-center">
+        {% if x.profile_pic %}
+        <div class="avatar shadow"
+            style="background-image: url('{{ x.profile_pic.url }}'); border-radius: 50%; background-size: cover;">
+        </div>
+        {% else %}
+        <div class="avatar shadow"
+            style="background-image: url('/media/profile_pics/default.jpg'); border-radius: 50%; background-size: cover;">
+        </div>
+        {% endif %}
+        <div>
+            {% if x.first_name %}
+            <p class="text-bold m-0 p-0">{{x.first_name}} {{x.lastname}}</p>
+            {% else %}
+            No Name Given
+            {% endif %}
+            <p class="text-bold m-0 p-0 text-xs text-muted">@{{x.user.username}}</p>
+        </div>
+    </div>
+    <div class="mx-4 mt-3">
+        {% if x.user in request.user.profile.friends.all %}
+        <a href="{% url 'remove_friend' x.user.id %}" class="btn contexte " style="filter: brightness(1.1);"><span class="removef" >Remove Friend</span><i class="fa fa-trash-o removei"></i></a>
+        {% elif x.user in sended_users %}
+        <a href="{% url 'remove_request' x.user.id %}" class="btn contexte"
+            style="filter: brightness(1.1);"><span class="removef">Requested</span><i class="fa fa-check removei" aria-hidden="true"></i></a>
+        {% else %}
+        <a href="{% url 'add_friend' x.user.id %}" class="btn contexte" ><span class="removef">Add Friend</span><i class="fa fa-plus removei" aria-hidden="true"></i></a>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% endfor %}
+{% else %}
+<h3 class="text-center text-muted">No Result Found....</h3>
+{% endif %}
+{% endblock content %}

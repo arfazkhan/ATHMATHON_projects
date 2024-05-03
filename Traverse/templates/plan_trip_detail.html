@@ -1,0 +1,460 @@
+{% extends 'Dashboardbase.html' %}
+
+{% block content %}
+
+<style>
+    .card.mb-4.col-12.col-lg-4.members {
+        margin: auto 30px;
+    }
+    @media(max-width:992px){
+        .card.mb-4.col-12.col-lg-4.members {
+        margin: auto ;
+    }
+    h2{
+        font-size:25px;
+    }
+    }
+</style>
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxaPlVxe-HTnuBzPajIUoXQSxiqoMitLc&callback=initMap"></script>
+<div class="d-flex flex-lg-row flex-column ">
+    <div class="col-12 col-lg-8">
+        <h2 class="texte" id="place">{{trip.place_name}}</h2>
+        <p class="text-muted m-0">Start: {{trip.start_travel_date}} | End: {{trip.end_travel_date}}</p>
+        <hr>
+        <h4 class="lead m-0">Mode of Travel</h4>
+        {% if trip.mode_of_travel == 'solo' %}
+        <p class="text-capitalize text-sm">Personel Trip</p>
+        {% else %}
+        <p class="text-capitalize text-sm">Group Travel</p>
+        {% endif %}
+        <h4 class="lead m-0">My Vibe</h4>
+        <p>{{trip.travel_vibe}}</p>
+
+        {% if trip.mode_of_travel == 'team' %}
+            {% if trip.share_facilities == 'yes' %}
+                {% if trip.share_every_facility == 'yes' %}
+                    <p class="m-0">I Am Willing To Share Every Facilities (50/50)</p>
+                {% else %}
+                    <p class="m-0">I am Willing To Share My Facilities But I Am not willing to share every facilities</p>
+                {% endif %}
+                    <p class="m-0">Facilities i am willing to share:</p>
+                {% if trip.facilities %}
+                    <p class="text-bold">{{trip.facilities}}</p>
+                {% else %}
+                    <p class="m-0 text-danger">None</p>
+                {% endif %}
+                {% if facilities_image %}
+                    <img src="{{trip.facilities_image.url}}" alt="facilities_image" class="img-fluid"
+                        style="width: 250px; height: 300px; border-radius: 20px; background-size: contain;">
+                {% endif %}
+            {% else %}
+                <h4 class="lead text-danger">Not Willing To Share My Facilities</h4>
+            {% endif %}
+        {% endif %}
+        <hr>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex gap-2 align-items-center">
+                {% if trip.user.profile.profile_pic %}
+                <div class="border-radius-lg shadow-sm"
+                    style="border-radius: 50%; background-image: url('{{ trip.user.profile.profile_pic.url }}'); background-size: cover; width: 42px; height: 42px;">
+                </div>
+                {% else %}
+                <div class="border-radius-lg shadow-sm"
+                    style="border-radius: 50%; background-image: url('/media/profile_pics/default.jpg'); background-size: cover; width: 42px; height: 42px;">
+                </div>
+                {% endif %}
+                <p class="text-bold m-0 text-capitalize"> By {{trip.user.username}}</p>
+            </div>
+            <div>
+                <button id="getPlaceSuggestion" class="btn btn-info">Suggestions?</button>
+                <script type="importmap">
+                    {
+                        "imports": {
+                        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+                        }
+                    }
+                </script>
+                    <script type="module">
+                    import { GoogleGenerativeAI } from "@google/generative-ai";
+                    const API_KEY = "AIzaSyAE-6xV3UHMTfi-nGj-VFYHElz3rB-fPos";
+                    const genAI = new GoogleGenerativeAI(API_KEY);
+                    const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+
+                    document.getElementById('getPlaceSuggestion').addEventListener('click', getPlaceSuggestion);
+
+                    async function getPlaceSuggestion() {
+                        const place = document.getElementById("place").innerText;
+                        console.log(place)
+                        const prompt = "Give me a best place to visit in " + place + " in a single paragraph, dont make it too long and more creative make it formal and simple to read at last write say 'THIS IS A RESPONSE FROM GENERATIVE AI.'";
+                        document.getElementById('gemini-sug').disabled = true;
+                        try {
+                        const result = await model.generateContent(prompt);
+                        const response = await result.response;
+                        const text = await response.text();
+                        document.getElementById('gemini-sug').innerHTML = `<p>${text}</p>`;
+                        } catch (error) {
+                        console.error('Error:', error);
+                        } finally {
+                        document.getElementById('gemini-sug').disabled = false;
+                        }
+                    }
+                    </script>
+
+                <script>
+                    function getPlaceSuggestion() {
+                        var place = document.getElementById("place").value;
+                        
+                    }
+                </script>
+                {% if request.user in trip.group_users.all %}
+                <a href="{% url 'plantrip_group_chat' trip.id %}" class="btn btn-success"><i class="fa fa-comment-dots"></i></a>
+                {% endif %}
+
+                {% if request.user in trip.group_name.group_users.all %}
+
+                {% if trip.user != request.user %}
+                <a href="" class="btn btn-info disabled">Joined</a>
+                {% endif %}
+
+
+                {% else %}
+                {% if trip.user != request.user %}
+                {% if request.user not in trip.group_users.all %}
+
+                {% if not is_requested %}
+                <a href="{% url 'plantrip-add-user' trip.id %}" class="btn btn-info">Join</a>
+                {% else %}
+                <a href="" class="btn btn-info disabled">Requested</a>
+                {% endif %}
+
+                {% else %}
+                <a href="{% url 'plantrip-leave-user' trip.id %}" class="btn btn-info">Leave</a>
+                {% endif %}
+
+                {% else %}
+                <a href="{% url 'plantrip-delete' trip.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
+                {% comment %} <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    Send Request To Join
+                </button>
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Search Users</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for names..">
+                                <ul id="myUL" style="margin: 0px 10px;">
+                                    {% for x in request.user.profile.friends.all %}
+                                    {% for i in personel_trip_is_requested %}
+                                    {% if x.username == i.to_user.username %}
+                                    <li>
+                                        <div class="d-flex justify-content-between">
+                                            <p id="sendrequestname">{{ x.username }}</p>
+                                            <button id="sendrequestbutton-{{ x.id }}"
+                                                onclick="sendRequest('{{ x }}', '{{ x.id }}')"
+                                                class="btn btn-success btn-sm" disabled>
+                                                Requested
+                                            </button>
+                                        </div>
+                                    </li>
+                                    {% endif %}
+                                    {% if x.username != i.to_user.username %}
+                                    <li>
+                                        <div class="d-flex justify-content-between">
+                                            <p id="sendrequestname">{{ x.username }}</p>
+                                            <button id="sendrequestbutton-{{ x.id }}"
+                                                onclick="sendRequest('{{ x }}', '{{ x.id }}')"
+                                                class="btn btn-success btn-sm">
+                                                Send Request
+                                            </button>
+                                        </div>
+                                    </li>
+                                    {% endif %}
+                                    {% endfor %}
+
+                                    {% endfor %}
+
+                                    <script>
+                                        function sendRequest(username, id) {
+                                            console.log(username);
+                                            trip = '{{trip.id}}'
+                                            var button = document.getElementById("sendrequestbutton-" + id);
+                                            button.innerHTML = "Request Sended";
+
+                                            $.ajax({
+                                                type: "POST",
+                                                url: `/dashboard/plantrip/detail/${trip}/request/${username}`,
+                                                data: {
+                                                    username: username,
+                                                    csrfmiddlewaretoken: "{{ csrf_token }}"
+                                                },
+                                                success: function () {
+                                                    button.innerHTML = "Requested";
+                                                    button.disabled = true;
+                                                },
+                                                error: function () {
+                                                    button.innerHTML = "Error";
+                                                }
+                                            });
+                                        }
+                                    </script>
+
+                                </ul>
+                                <style>
+                                    #myInput {
+                                        background-image: url('/css/searchicon.png');
+                                        background-position: 10px 12px;
+                                        background-repeat: no-repeat;
+                                        width: 100%;
+                                        font-size: 16px;
+                                        padding: 12px 20px 12px 40px;
+                                        border: 1px solid #ddd;
+                                        margin-bottom: 12px;
+                                    }
+
+                                    #myUL {
+                                        list-style-type: none;
+                                        padding: 0;
+                                        margin: 0;
+                                    }
+
+                                    #myUL li a {
+                                        border: 1px solid #ddd;
+                                        margin-top: -1px;
+                                        background-color: #f6f6f6;
+                                        padding: 12px;
+                                        text-decoration: none;
+                                        font-size: 18px;
+                                        color: black;
+                                        display: block;
+                                    }
+
+                                    #myUL li a:hover:not(.header) {
+                                        background-color: #eee;
+                                    }
+                                </style>
+                                <script>
+                                    function myFunction() {
+                                        var input, filter, ul, li, a, i, txtValue;
+                                        input = document.getElementById('myInput');
+                                        filter = input.value.toUpperCase();
+                                        ul = document.getElementById("myUL");
+                                        li = ul.getElementsByTagName('li');
+
+                                        for (i = 0; i < li.length; i++) {
+                                            a = li[i].getElementsByTagName("div")[0];
+                                            txtValue = a.textContent || a.innerText;
+                                            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                                                li[i].style.display = "";
+                                            } else {
+                                                li[i].style.display = "none";
+                                            }
+                                        }
+                                    }
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    const searchInput = document.getElementById('searchInput');
+                    const searchDropdown = document.getElementById('searchDropdown');
+
+                    searchInput.addEventListener('input', () => {
+                        // Clear the dropdown
+                        searchDropdown.innerHTML = '';
+
+                        // Filter the user array based on the input value
+                        const filteredUsers = users.filter(user => user.toLowerCase().includes(searchInput.value.toLowerCase()));
+
+                        // Add a dropdown item for each filtered user
+                        filteredUsers.forEach(user => {
+                            const dropdownItem = document.createElement('a');
+                            dropdownItem.classList.add('dropdown-item');
+                            dropdownItem.href = '#';
+                            dropdownItem.textContent = user;
+                            dropdownItem.addEventListener('click', () => {
+                                searchInput.value = user;
+                            });
+                            searchDropdown.appendChild(dropdownItem);
+                        });
+
+                        if (filteredUsers.length == 0) {
+                            const dropdownItem = document.createElement('button');
+                            dropdownItem.classList.add('dropdown-item');
+                            dropdownItem.type = 'button';
+                            dropdownItem.disabled = true;
+                            dropdownItem.textContent = 'No users found';
+                            searchDropdown.appendChild(dropdownItem);
+                        }
+                    });
+                </script> {% endcomment %}
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="card mb-4 col-12 col-lg-4 members" style="padding: 20px; ">
+        <div class="card-header" style="padding: 0px;">
+            <div class="d-flex justify-content-between">
+                {% if trip.mode_of_travel == 'solo' %}
+                <h4 class="texte">Members</h4>
+                {% else %}
+                <h4 class="texte">Group Members</h4>
+                {% endif %}
+                <a href="{% url 'send_bulk_email' trip.id %}" class="btn btn-info">Alert <span class="fa fa-mail-bulk"></span></a>
+            </div>
+            <hr>
+        </div>
+        <div class="card-body px-0 pt-0 pb-1 overflow-auto" style="height: 340px;">
+            <div class="table-responsive p-0">
+                <table class="table align-items-center mb-0">
+                    <tbody>
+                        {% for x in trip.group_users.all %}
+                        <tr>
+                            <td>
+                                <div class="d-flex justify-content-between align-items-center px-1 py-0">
+                                    <div class="d-flex">
+                                        <div>
+                                            <img src="{% if x.profile.profile_pic %}{{x.profile.profile_pic.url}}{% endif %}" class="avatar avatar-sm me-3">
+                                        </div>
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm d-flex align-items-center text-capitalize"
+                                                style="cursor: pointer;">{{x.username}}
+                                                {% if x == trip.user%}
+                                                <span class="text-danger mx-2">(Admin)</span>
+                                                {% endif %}
+
+                                            </h6>
+                                            <p class="text-muted text-xs m-0">{% if x.profile.email %}
+                                                {{x.profile.email}}
+                                                {% else %}
+                                                No Email
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <a href="/dashboard/chat/person-chat?username={{x.username}}"><i
+                                            class="fa fa-comment-dots"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="gemini-sug" class="my-3"></div>
+
+{% if request.user == trip.user %}
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Join Requests</h6>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">User
+                                    </th>
+                                    <th class="text-secondary opacity-7"></th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if requests %}
+                                {% for x in requests %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-2 py-1 person_chat">
+                                            <div>
+                                                {% if x.from_user.profile.profile_pic %}
+                                                <div src="" class="rounded-circle mx-1"
+                                                    style="background-image: url('{{x.from_user.profile.profile_pic.url}}'); width: 40px; height: 40px; background-size: cover;">
+                                                </div>
+                                                {% else %}
+                                                <div src="" class="rounded-circle mx-1"
+                                                    style="background-image: url(''); width: 40px; height: 40px; background-size: cover;">
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <p class="text-xs text-secondary mb-0">{{x.from_user.profile.first_name}}</p>
+                                                {% if not x.from_user.profile. %}
+                                                <p class="text-xs text-secondary mb-0">No email</p>
+                                                {% else %}
+                                                <p class="text-xs text-secondary mb-0">{{x.from_user.profile.email}}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle text-center text-sm">
+                                        <a href="{% url 'plantrip-add-user-accept' x.id trip.id %}"><span
+                                                class="badge badge-sm bg-gradient-success">Accept</span></a>
+                                        <a href="{% url 'plantrip-add-user-decline' x.id trip.id %}"><span
+                                                class="badge badge-sm bg-gradient-danger">Decline</span></a>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <span class="text-secondary text-xs font-weight-bold">{{x.created}}</span>
+                                    </td>
+                                    {% comment %} <td class="align-middle">
+                                        <a href="javascript:;" class="text-secondary font-weight-bold text-xs"
+                                            data-toggle="tooltip" data-original-title="Edit user">
+                                            <i class="fa fa-trash fa-1x" style="color: red;"></i>
+                                        </a>
+                                    </td> {% endcomment %}
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <td></td>
+                                <td></td>
+                                <td class="d-flex justify-content-start">
+                                    <h4 class="text-sm font-weight-bold my-2 text-muted">No Requests</h4>
+                                </td>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% comment %} </div>
+    </div> {% endcomment %}
+</div>
+{% endif %}
+<div class="col-12">
+    <div id="map" style="height: 300px; width: 100%; border-radius: 20px;">
+    </div>
+</div>
+
+<script>
+    function initMap() {
+        const myLoc = { lat: parseFloat('{{trip.latitude}}'), lng: parseFloat('{{trip.longitude}}') };
+        const map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 12,
+            center: myLoc,
+        });
+        var marker = new google.maps.Marker({
+            position: myLoc,
+            map: map,
+            title: '{{trip.place_name}}',
+            animation: google.maps.Animation.DROP
+            });
+        
+    }
+
+    window.onload = function () {
+        initMap();
+    };
+</script>
+{% endblock content %}

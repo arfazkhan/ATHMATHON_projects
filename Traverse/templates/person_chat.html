@@ -1,0 +1,351 @@
+{% extends 'Dashboardbase.html' %}
+{% load static %}
+
+
+{%block content %}
+<section class="chatbox">
+  <section class="chat-window" id="chat-window">
+    <div class="d-flex justify-content-start align-items-center">
+      <a href="{% url 'chat' %}">
+        <i class="fa fa-arrow-left arr" style="margin-right: 15px; font-size: x-large; margin-bottom: 10px;"
+          aria-hidden="true"></i>
+      </a>
+      {% if receiver.profile.profile_pic %}
+      <div src="" class="rounded-circle mb-3 mx-2"
+        style="background-image: url('{{receiver.profile.profile_pic.url}}'); width: 40px; height: 40px; background-size: cover;">
+      </div>
+      {% else %}
+      <div src="" class="rounded-circle mb-3 mx-2"
+        style="background-image: url('/media/profile_pics/default.jpg'); width: 40px; height: 40px; background-size: cover;">
+      </div>
+      {% endif %}
+      <div>
+        <h6>{% if receiver.profile.first_name %}
+          {{receiver.profile.first_name}}
+          {% else %}
+          {{receiver}}
+          {% endif %}
+        </h6>
+      </div>
+      <div class="mvi"><i class="fa fa-ellipsis-v mvicon" aria-hidden="true" onclick="toggleMoreInfo()"></i></div>
+
+    </div>
+    <div class="more-info minfo" id="more-info">
+      <p><strong>Email:</strong> {% if receiver.profile.email == "" %}No email{% else %}{{ receiver.profile.email }}{% endif %}</p>
+      <p><strong>Native Place:</strong> Areekode</p>
+    </div>
+    {% if messages %}
+    {% for x in messages %}
+    <article class="msg-container msg-{% if x.sender == request.user %}self{% else %}remote{% endif %}" id="msg-0">
+      <div class="msg-box">
+        <!-- <img class="user-img" id="user-0" src="//gravatar.com/avatar/00034587632094500000000000000000?d=retro" /> -->
+        <div class="flr">
+          <div class="messages">
+            <p class="msg" style="margin: 0px 10px 10px 10px;" id="msg-0">
+              {{x.message}}
+            </p>
+          </div>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+    {% else %}
+    <div id="when-no-message">
+      <h3 class="text-center ">No Messages</h3>
+      <p class="m-0 text-muted text-center">Say Hi To Your New Friend</p>
+    </div>
+    {% endif %}
+
+
+  </section>
+  <div class="chat-input" id="chat-form">
+    <input type="text" autocomplete="on" id="input-message" name="message" placeholder="Type a message" />
+    <button type="submit" id="send-button">
+      <i class="fa fa-paper-plane-o" style="color: white;" aria-hidden="true"></i>
+    </button>
+  </div>
+</section>
+<script>
+  var input_message = document.getElementById("input-message");
+  var send_button = document.getElementById("send-button");
+
+  var websock = new WebSocket(
+    `ws://${window.location.host}/ws/chat/{{receiver}}/`
+  );
+
+  input_message.addEventListener("keypress", function (event) {
+    if (event.key === "Enter") {
+      send_button.click();
+    }
+  });
+
+  send_button.addEventListener("click", (e) => {
+    if (input_message.value === "") return;
+    websock.send(
+      JSON.stringify({
+        type: "chat",
+        message: input_message.value,
+      })
+    );
+    input_message.value = "";
+  });
+
+  websock.onmessage = (e) => {
+    data = JSON.parse(e.data);
+    switch (data.type) {
+      case "connected":
+        console.log(data["message"]);
+        break;
+      case "chat":
+        send_message(data["message"], data["user"], "self", data);
+        scrollToBottom(); // added call to scrollToBottom on new message
+        break;
+      default:
+        console.log("Unknown Type");
+        break;
+    }
+  };
+
+  function send_message(message, user = null, self_remote = null, data) {
+    var currentUser = "{{request.user}}";
+    user = user == null ? currentUser : user;
+    self_remote =
+      self_remote != null
+        ? user === currentUser
+          ? "self"
+          : "remote"
+        : self_remote;
+
+    // Create the article element
+    const article = document.createElement("article");
+    article.classList.add("msg-container", `msg-${self_remote}`);
+    article.id = "msg-0";
+
+    // Create the div element for the msg-box
+    const msgBox = document.createElement("div");
+    msgBox.classList.add("msg-box");
+
+    // Create the div element for the flr
+    const flr = document.createElement("div");
+    flr.classList.add("flr");
+
+    // Create the div element for the messages
+    const messages = document.createElement("div");
+    messages.classList.add("messages");
+
+    // Create the p element for the msg
+    const msg = document.createElement("p");
+    msg.classList.add("msg");
+    msg.style.padding = "10px";
+    msg.style.maxWidth = "100%";
+    msg.style.textAlign = "start";
+    msg.style.wordWrap = "break-word";
+    msg.id = "msg-0";
+    msg.innerText = message;
+
+    // Append the elements
+    messages.appendChild(msg);
+    flr.appendChild(messages);
+    msgBox.appendChild(flr);
+    article.appendChild(msgBox);
+
+    // Append the article to the body
+    document.getElementById("chat-window").appendChild(article);
+  }
+
+  // added scrollToBottom function
+  function scrollToBottom() {
+    var chatWindow = document.getElementById("chat-window");
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+
+  function toggleMoreInfo() {
+    var moreInfo = document.getElementById("more-info");
+    if (moreInfo.style.display === "block") {
+      moreInfo.style.display = "none";
+    } else {
+      moreInfo.style.display = "block";
+    }
+  }
+</script>
+
+<style>
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #4c4c6a;
+    border-radius: 2px;
+  }
+
+  .chatbox {
+    width: 100%;
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color:white;
+    box-shadow: 0 0 4px rgba(0, 0, 0, .14), 0 4px 8px rgba(0, 0, 0, .28);
+  }
+
+  .chat-window {
+    flex: auto;
+    padding: 30px;
+    max-height: calc(100% - 60px);
+    background: transparent;
+    overflow: auto;
+  }
+
+  .chat-input {
+    flex: 0 0 auto;
+    height: 60px;
+    background: #babfcf;
+    border-top: 1px solid #2671ff;
+    box-shadow: 0 0 4px rgba(0, 0, 0, .14), 0 4px 8px rgba(0, 0, 0, .28);
+  }
+
+  .chat-input input {
+    height: 59px;
+    line-height: 60px;
+    outline: 0 none;
+    border: none;
+    width: calc(100% - 60px);
+    color: white;
+    text-indent: 10px;
+    font-size: 12pt;
+    background: #aeb4c9;
+  }
+
+  .chat-input button {
+    float: right;
+    outline: 0 none;
+    border: none;
+    box-shadow: 0 0 2px rgba(0, 0, 0, .12), 0 2px 4px rgba(0, 0, 0, .24);
+    background: grey;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    padding: 2px 0 0 0;
+    margin: 10px;
+    transition: 0.3s;
+  }
+
+  .chat-input button:hover {
+    background: #2671ff;
+    transform: scale(1.1);
+  }
+
+  .msg-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    margin: 0 0 10px 0;
+    padding: 0;
+  }
+
+  .msg-box {
+    display: flex;
+    background: #babbc0;
+    padding: 10px 10px 0 10px;
+    border-radius: 20px 20px 20px 0px;
+    max-width: 80%;
+    width: auto;
+    float: left;
+    box-shadow: 0 0 2px rgba(0, 0, 0, .12), 0 2px 4px rgba(0, 0, 0, .24);
+  }
+
+  .user-img {
+    display: inline-block;
+    border-radius: 50%;
+    height: 40px;
+    width: 40px;
+    background: #2671ff;
+    margin: 0 10px 10px 0;
+  }
+
+  .flr {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 50px);
+  }
+
+  .messages {
+    flex: 1 0 auto;
+  }
+
+  .msg {
+    display: inline-block;
+    font-size: 11pt;
+    font-weight: bold;
+    line-height: 13pt;
+    color: rgba(0, 0, 0, 0.7);
+    margin: 0 0 4px 0;
+  }
+
+  .msg:first-of-type {
+    margin-top: 8px;
+  }
+
+  .timestamp {
+    color: rgba(0, 0, 0, 0.631);
+    font-size: 10pt;
+    margin-bottom: 10px;
+  }
+
+  .username {
+    margin-right: 3px;
+    margin-left: 0px;
+  }
+
+  .posttime {
+    margin-left: 3px;
+    margin-right: 10px;
+  }
+
+  .msg-self .msg-box {
+    border-radius: 20px 20px 0px 20px;
+    background: white;
+    float: right;
+  }
+
+  .msg-self .user-img {
+    margin: 0 0 10px 10px;
+  }
+
+  .msg-self .msg {
+    text-align: right;
+  }
+
+  .msg-self .timestamp {
+    text-align: right;
+  }
+  .minfo{
+    display:none;
+  }
+  .mvicon{
+    display:none;
+  }
+  .arr{
+    color:#bdbdbd
+  }
+  h3{
+    margin-top:20%;
+    color:#bdbdbd;
+    
+  }
+  @media(max-width:768px){
+    .mvicon{
+      display:block;
+    }
+    .mvi{
+      margin-left:45%    }
+      h3{
+        margin-top:60%;
+        color:#bdbdbd;
+        font-size:25px;
+      }
+  }
+</style>
+{% endblock %}
