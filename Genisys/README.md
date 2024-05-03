@@ -11,3 +11,7 @@
 - **Quotes and Tips Suggestions:** Receive daily inspirational quotes and personalized video suggestions for positivity and motivation.
 
 **Mission:** Empower users to take control of their mental health, fostering self-discovery and emotional maturity for a fulfilling present.
+
+### Note:
+add migrations module in api app (create a folder named *"migrations"* inside api folder and create an empty file named *"__init__.py"* inside the newly created *"migrations"* folder)
+
