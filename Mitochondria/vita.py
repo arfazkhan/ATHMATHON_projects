@@ -8,10 +8,10 @@ st.header("Hi im Vita")
 # st.subheader("Please begin by sharing your full name, age, and token number. Following that, provide details about your current condition or situation")
 
     
-Lol_Key = '''//Your API key here//'''
+open_API_Key = '''//Your API key here//'''
 
 # Initialize the ChatOpenAI class with your API key
-chat = ChatOpenAI(api_key=Lol_Key, temperature=0.5)
+chat = ChatOpenAI(api_key=open_API_Key, temperature=0.5)
 
 # Initialize session_state if not already initialized
 if 'flowmessages' not in st.session_state:
