@@ -1,0 +1,203 @@
+{% extends 'Dashboardbase.html' %}
+{% load static %}
+
+{%block content %}
+<div class="col-12">
+  <div class="page-header min-height-100 border-radius-xl mt-1 "
+    style="background-image: url('static/images/profile.jpeg'); background-position-y: 50%;">
+    <span class="mask  opacity-6"></span>
+  </div>
+  <div class="card card-body blur shadow-blur mx-4 mt-n6">
+    <div class="row gx-4">
+      <div class="col-auto">
+        <div class="avatar avatar-xl position-relative mt-1">
+          {% if profile.profile_pic %}
+          <div class="w-100 h-100 border-radius-lg shadow-sm"
+            style="border-radius: 50%; background-image: url('{{ profile.profile_pic.url }}'); background-size: cover; width: 64px; height: 64px;">
+          </div>
+          {% else %}
+          <div class="w-100 h-100 border-radius-lg shadow-sm"
+            style="border-radius: 50%; background-image: url('/media/profile_pics/default.jpg'); background-size: cover; width: 64px; height: 64px;">
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-auto my-auto">
+        <div class="h-100">
+          <div class="texte d-flex justify-content-start">
+            <h4 style="margin: 0px;">{% if profile.first_name %}
+              {{profile.first_name}} {{profile.last_name}}
+              {% else %}
+              No Name
+              {% endif %}</h4>
+            <div class="right mx-2">
+              <button class="fa fa-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal"
+                style="border: none; width: 10px; margin: 0px 5px; height: 10px; color: gray;"></button>
+            </div>
+          </div>
+          <div class="texte d-flex">
+            <h6 style="color: grey; margin: 0px;">@{{request.user}}</h6>
+          </div>
+
+          <h6 class="mb-0 font-weight-bold texte m-0">
+            <span class="fa fa-map-marker"></span> : {{longitude}} - {{latitude}}
+          </h6>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="container py-4 ">
+    <div class="row my-3">
+      <div class=" col-lg-6  col-12">
+        <div class="card mb-4" style="min-height: 140px">
+          <div class="card-header pb-0 p-3">
+            <h5 class="mb-0 texte">Bio</h5>
+          </div>
+          <div class="card-body p-3">
+            <p>
+              {% if profile.bio %}
+              {{profile.bio}}
+              {% else %}
+            <p>No bio</p>
+            {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class=" col-lg-6  col-12">
+        <div class="card mb-4" style="min-height: 140px">
+          <div class="card-header pb-0 p-3">
+            <h5 class="mb-0 texte">vibes</h5>
+          </div>
+          <div class="card-body p-3">
+              {% for x in tags %}
+                    <button class="tag-button" data-vibe="{{ x }}">{{ x }}</button>
+              {% endfor %}
+              <style>
+                .tag-button {
+                  pointer-events: auto;
+                  background-color: #eaeaeb;
+                  border: none;
+                  color: black;
+                  padding: 5px 10px;
+                  text-align: center;
+                  text-decoration: none;
+                  display: inline-block;
+                  margin-right: 13px;
+                  margin-left: -1px;
+                  margin-bottom: 10px;
+                  border-radius: 100px;
+              }
+              </style>
+          </div>
+        </div>
+      </div>
+      <div class=" col-lg-12  col-12 ">
+        <div class="card mb-4" style="min-height: 140px">
+          <div class="card-header pb-0 p-3">
+            <h5 class="mb-0 texte">My Favorite Trip</h5>
+          </div>
+          <div class="card-body p-3">
+            <p>{% if profile.personal_favorite_trip_blog %}{{profile.personal_favorite_trip_blog}}{% else %}
+            <p>No trip blog</p>{% endif %}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div>
+  Reviews
+  <hr>
+  
+  {% for review in profile.reviews.all %}
+    <div class="card m-3 p-4 d-flex justify-content-between">
+      
+      {% for star in value %}
+        
+      {% endfor %}
+        
+      <p class="m-0">{{review.review}}</p>
+      <p class="m-0 text-info">User: {{review.user.username}}</p>
+    </div>
+  {% empty %}
+  <p class="text-info">There Is No Reviews</p>
+  {% endfor %}
+    
+</div>
+
+{% comment %} model {% endcomment %}
+<div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog" aria-labelledby="editProfileModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            {{form.first_name}}
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            {{form.last_name}}
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            {{form.email}}
+          </div>
+          <div class="form-group">
+            <label for="number">Number</label>
+            {{form.number}}
+          </div>
+          <div class="form-group">
+            <label for="profilePic">Profile Picture</label>
+            {{form.profile_pic}}
+          </div>
+          <div class="form-group">
+            <label for="bio">Bio</label>
+            {{form.bio}}
+          </div>
+          <div class="form-group">
+            <label for="personalTripBlog">Personal Favorite Trip Blog</label>
+            {{form.personal_favorite_trip_blog}}
+          </div>
+          <div class="form-group">
+            <label for="vibes">Vibes</label>
+            {{form.vibes}}
+            <script>
+                $('.vibes-multiple').select2();
+            </script>
+          </div>
+          <div class="modal-footer">
+
+            <button type="button" class="btn blue shadow-none" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn contexte">Save changes</button>
+          </div>
+      </div>
+      </form>
+
+    </div>
+  </div>
+  <style>
+    .container-fluid{
+      height:100vh;
+    }
+    .col-9{
+      width:90%;
+    }
+    @media (max-width: 992px) {
+      h1{
+        font-size: 30px;
+       }}
+  </style>
+</div>
+
+{% endblock %}

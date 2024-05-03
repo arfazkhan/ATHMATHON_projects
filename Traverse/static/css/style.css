@@ -1,0 +1,78 @@
+
+
+
+
+
+
+
+
+
+
+
+
+.navbar-wrapper-flex-end{
+    display: flex;
+    justify-content: end;
+}
+.texte{
+    color: #1F2F98;
+}
+button.blue{
+    border-color:#1F2F98;
+  color:#1F2F98;
+}
+button.blue:hover {
+    background-image: linear-gradient(to right, #1CA7EC,#8691C7); 
+    color: white;
+  }
+  
+button.texte{
+    color:white ;
+}
+.contexte{
+    background-image: linear-gradient(to right, #1CA7EC,#8691C7); 
+    color: #ffffff;
+}
+#contexte{
+    background-color: #EDF2FB;
+}
+.navbar .logo-texte {
+    color: #1F2F98;
+    
+}
+
+.navbar .nav-link {
+    color: #ffffff;
+}
+
+.width{
+    width: 85%;
+}
+
+.form-control:focus {
+    border-color: #1CA7EC;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px #1CA7EC;
+  }
+  .dashboardico:hover{
+    background-image: linear-gradient(to right, #1CA7EC,#8691C7); 
+    color: white;
+    border-radius: 8px;
+  }
+ 
+
+@media (max-width: 992px) { 
+    .navbar-wrapper-flex-end{
+        justify-content: flex-start;
+    }
+    nav .navbar .py-3 {
+        padding-top: 0.25rem !important;
+        padding-bottom: 0.25rem !important;
+    }
+   button .navbar-toggler .navbar-toggler-icon .navbar-toggler-bar .bar1 .bar2 .bar3{
+        background-color: #ffffff !important;
+      }
+   
+ }
+
+
+ 

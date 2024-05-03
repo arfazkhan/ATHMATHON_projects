@@ -1,0 +1,87 @@
+{% extends 'Dashboardbase.html' %} {% block content %} {% if profiles %} {% for x in profiles %}
+<div style="width: 100%; margin: 20px" class="px-2 border-bottom-1 shadow-xs shadow-blur mt-2">
+  <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-3 align-content-center">
+      {% if x.profile_pic %}
+      <div
+        class="avatar shadow"
+        style="background-image: url('{{ x.profile_pic.url }}'); border-radius: 50%; background-size: cover;"
+      ></div>
+      {% else %}
+      <div
+        class="avatar shadow"
+        style="background-image: url('/media/profile_pics/default.jpg'); border-radius: 50%; background-size: cover"
+      ></div>
+      {% endif %}
+      <div>
+        {% if x.first_name %}
+        <p class="text-bold m-0 p-0">{{x.first_name}} {{x.lastname}}</p>
+        {% else %} No Name Given {% endif %}
+        <p class="text-bold m-0 p-0 text-xs text-muted">@{{x.user.username}}</p>
+      </div>
+    </div>
+    <div class="mx-4 mt-3">
+      <button class="btn border-radius-lg contexte" data-bs-toggle="modal" data-bs-target="#reviewModel">
+        Review This User
+      </button>
+      <div class="modal" id="reviewModel" tabindex="-1" role="dialog" aria-labelledby="reviewModelLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="reviewModelLabel">Create Blog</h5>
+              <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="modal-body">
+                <div class="form-group">
+                  <input
+                    type="hidden"
+                    name="user"
+                    value="{{x.user.id}}"
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="blogTitle">Review</label>
+                  <input
+                    type="text"
+                    name="review"
+                    class="form-control"
+                    placeholder="Enter review message"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="blogTitle">Raiting</label>
+                  <input
+                    type="number"
+                    min="1"
+                    step=".5"
+                    max="5"
+                    name="value"
+                    class="form-control"
+                    placeholder="Raiting"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn blue shadow-none" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn contexte">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %} {% else %}
+<div class="text-center">
+  <p class="text-lg text-warning`">Oooops..</p>
+  <h3 class="text-center text-muted">No Have To Travel With Them To Rate Them....</h3>
+</div>
+{% endif %} {% endblock content %}
