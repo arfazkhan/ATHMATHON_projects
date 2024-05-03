@@ -7,7 +7,7 @@ st.set_page_config(page_title="MED Q&A Chatbot")
 st.header("Hi im Vita")
 # st.subheader("Please begin by sharing your full name, age, and token number. Following that, provide details about your current condition or situation")
 
-# Define your OpenAI API key here
+    
 openai_api_key = '''//Your API key here//'''
 
 # Initialize the ChatOpenAI class with your API key
